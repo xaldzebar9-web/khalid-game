@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ku">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>یارییا تە ب زمانێ بادینی</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0f172a;
+            color: white;
+            font-family: system-ui, -apple-system, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+        #score {
+            font-size: 26px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: #f8fafc;
+        }
+        canvas {
+            background-color: #1e293b;
+            border: 3px solid #38bdf8;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+        }
+        #instructions {
+            margin-top: 15px;
+            font-size: 16px;
+            color: #38bdf8;
+            text-align: center;
+            padding: 0 10px;
+        }
+        /* لۆگۆ و مافێ گەشەپێدەری ل گۆشەیێ */
+        .developer-tag {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #94a3b8;
+            background: rgba(30, 41, 59, 0.8);
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid #334155;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="score">خال: 0</div>
+    <canvas id="gameCanvas" width="320" height="420"></canvas>
+    <div id="instructions">دستێ خۆ بزنە سکرینی دا تۆپکە بفڕیت!</div>
+
+    <!-- مافێ گەشەپێدەری -->
+    <div class="developer-tag">khalid.developer@</div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const scoreElement = document.getElementById("score");
+        const instructionsElement = document.getElementById("instructions");
+
+        let ball = { x: 160, y: 200, radius: 14, gravity: 0.26, jump: -5.6, velocity: 0 };
+        let score = 0;
+        let isGameOver = false;
+
+        function drawBall() {
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fillStyle = "#38bdf8";
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function update() {
+            if (isGameOver) return;
+
+            ball.velocity += ball.gravity;
+            ball.y += ball.velocity;
+
+            // ئەگەر کەفتە ئەردا یارییێ
+            if (ball.y + ball.radius > canvas.height) {
+                isGameOver = true;
+                scoreElement.innerHTML = "یاری خلاس بوو! خالێن تە: " + score;
+                instructionsElement.innerHTML = "دەستێ خۆ ل سکرینی بدە دا ژ نوو دەستپێبکەیی بژی!";
+            }
+
+            // سقف
+            if (ball.y - ball.radius < 0) {
+                ball.y = ball.radius;
+                ball.velocity = 0;
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBall();
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            if (!isGameOver) {
+                requestAnimationFrame(gameLoop);
+            }
+        }
+
+        function bounce() {
+            if (isGameOver) {
+                // ژ نوو دەستپێکرن
+                ball.y = 200;
+                ball.velocity = 0;
+                score = 0;
+                isGameOver = false;
+                scoreElement.innerHTML = "خال: 0";
+                instructionsElement.innerHTML = "دستێ خۆ بزنە سکرینی دا تۆپکە بفڕیت!";
+                gameLoop();
+            } else {
+                ball.velocity = ball.jump;
+                score++;
+                scoreElement.innerHTML = "خال: " + score;
+            }
+        }
+
+        // بۆ ئایفۆن و سکرینێن لەمس
+        window.addEventListener("touchstart", function(e) {
+            e.preventDefault();
+            bounce();
+        }, { passive: false });
+
+        window.addEventListener("mousedown", bounce);
+
+        gameLoop();
+    </script>
+</body>
+</html>
